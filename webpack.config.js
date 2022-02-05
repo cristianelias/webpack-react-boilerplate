@@ -1,5 +1,6 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
+const { ESBuildMinifyPlugin } = require("esbuild-loader");
 const webpack = require("webpack");
 
 module.exports = (env, { mode }) => {
@@ -20,6 +21,9 @@ module.exports = (env, { mode }) => {
         BACKEND_URL: JSON.stringify(backendUrl),
       }),
       new HtmlWebpackPlugin({ template: "src/index.html" }),
+      new webpack.ProvidePlugin({
+        React: "react",
+      }),
     ],
     devServer: {
       // open: true,
@@ -35,17 +39,11 @@ module.exports = (env, { mode }) => {
     module: {
       rules: [
         {
-          test: /\.jsx?$/,
-          loader: "babel-loader",
+          test: /\.js$/,
+          loader: "esbuild-loader",
           options: {
-            presets: [
-              [
-                "@babel/preset-react",
-                {
-                  runtime: "automatic",
-                },
-              ],
-            ],
+            loader: "jsx",
+            target: "es2015",
           },
         },
         {
@@ -57,6 +55,10 @@ module.exports = (env, { mode }) => {
           type: "asset/resource",
         },
       ],
+    },
+    optimization: {
+      minimize: isProduction,
+      minimizer: [new ESBuildMinifyPlugin({ target: "es2015" })],
     },
   };
 };
