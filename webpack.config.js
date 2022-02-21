@@ -62,7 +62,7 @@ module.exports = (env, { mode }) => {
               loader: "esbuild-loader",
               options: {
                 loader: "css",
-                minify: true,
+                minify: isProduction,
               },
             },
           ],
