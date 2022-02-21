@@ -1,3 +1,4 @@
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const { ESBuildMinifyPlugin } = require("esbuild-loader");
@@ -26,16 +27,16 @@ module.exports = (env, { mode }) => {
       }),
     ],
     devServer: {
-      // open: true,
+      open: true,
       client: {
-        overlay: true,
-        progress: true,
+        // overlay: true,
+        // progress: true,
       },
       compress: true,
       port: 3000,
       historyApiFallback: true,
     },
-    devtool: "source-map",
+    devtool: isProduction ? false : "source-map",
     module: {
       rules: [
         {
@@ -48,7 +49,17 @@ module.exports = (env, { mode }) => {
         },
         {
           test: /\.css$/,
-          use: ["style-loader", "css-loader"],
+          use: [
+            "style-loader",
+            "css-loader",
+            {
+              loader: "esbuild-loader",
+              options: {
+                loader: "css",
+                minify: isProduction,
+              },
+            },
+          ],
         },
         {
           test: /\.(jpe?g|svg|png|gif|ico|eot|ttf|woff2?)(\?v=\d+\.\d+\.\d+)?$/i,
@@ -58,7 +69,32 @@ module.exports = (env, { mode }) => {
     },
     optimization: {
       minimize: isProduction,
-      minimizer: [new ESBuildMinifyPlugin({ target: "es2015" })],
+      minimizer: [
+        new ESBuildMinifyPlugin({
+          target: "es2015",
+        }),
+        new ImageMinimizerPlugin({
+          minimizer: {
+            implementation: ImageMinimizerPlugin.squooshMinify,
+            options: {
+              encodeOptions: {
+                mozjpeg: {
+                  // That setting might be close to lossless, but it’s not guaranteed
+                  // https://github.com/GoogleChromeLabs/squoosh/issues/85
+                  quality: 100,
+                },
+                webp: {
+                  lossless: 1,
+                },
+                avif: {
+                  // https://github.com/GoogleChromeLabs/squoosh/blob/dev/codecs/avif/enc/README.md
+                  cqLevel: 0,
+                },
+              },
+            },
+          },
+        }),
+      ],
     },
   };
 };
