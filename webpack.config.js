@@ -40,17 +40,16 @@ module.exports = (env, { mode }) => {
     module: {
       rules: [
         {
-          test: /\.jsx?$/,
+          test: /\.js?$/,
           loader: "babel-loader",
           options: {
             presets: [
               [
                 "@babel/preset-react",
-                {
-                  runtime: "automatic",
-                },
+                { runtime: "automatic", importSource: "@emotion/react" },
               ],
             ],
+            plugins: ["@emotion/babel-plugin"],
           },
         },
         {
